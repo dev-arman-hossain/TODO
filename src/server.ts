@@ -48,7 +48,7 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Hello, bro! whats up?");
 });
 
-//users CRUD
+// users CRUD
 app.post("/users", async (req: Request, res: Response) => {
   const { name, email } = req.body;
   try {
@@ -127,6 +127,35 @@ app.delete("/users/:id", async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error(err);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// todos CRUD
+app.post("/todos", async (req: Request, res: Response) => {
+  const { user_id, title } = req.body;
+  try {
+    const result = await pool.query(
+      "INSERT INTO todos (user_id, title) VALUES ($1, $2) RETURNING *",
+      [user_id, title]
+    );
+    res.status(201).json({
+      success: true,
+      message: "Todo created successfully",
+      data: result.rows[0],
+    });
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/todos", async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query("SELECT * FROM todos");
+    res.status(200).json(result.rows);
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 });
 
