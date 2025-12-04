@@ -27,7 +27,6 @@ const updateUser = async (name: string, email: string, id: string) => {
   return result;
 };
 
-
 const deletUser = async (id: string) => {
   const result = await pool.query(
     `DELETE FROM users WHERE id = $1 RETURNING *`,
