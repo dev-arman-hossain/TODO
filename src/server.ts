@@ -1,54 +1,16 @@
 import express, { NextFunction, Request, Response } from "express";
-import { Pool } from "pg";
-import dotenv from "dotenv";
-import path from "path";
 
-dotenv.config({ path: path.join(process.cwd(), ".env") });
+import config from "./config";
+import initDB, { pool } from "./config/db";
+import logger from "./middleware/logger";
 
 const app = express();
-const PORT = 5000;
+const port = config.port;
 app.use(express.json());
 //app.use(express.urlencoded({ extended: true }));
 
-//DB
-const pool = new Pool({
-  connectionString: `${process.env.CONNECTION_STR}`,
-});
-
-const initDB = async () => {
-  await pool.query(`
-        CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
-            name VARCHAR(100) NOT NULL,
-            email VARCHAR(100) UNIQUE NOT NULL,
-            age INT,
-            phone VARCHAR(14),
-            address TEXT,
-            created_at TIMESTAMP DEFAULT NOW(),
-            updated_at TIMESTAMP DEFAULT NOW()
-        );
-    `);
-  console.log("Database initialized");
-
-  await pool.query(`
-        CREATE TABLE IF NOT EXISTS todos (
-            id SERIAL PRIMARY KEY,
-            user_id INT REFERENCES users(id) ON DELETE CASCADE,
-            title VARCHAR(100) NOT NULL,
-            description TEXT,
-           completed BOOLEAN DEFAULT FALSE,
-           due_date DATE,
-           created_at TIMESTAMP DEFAULT NOW(),
-           updated_at TIMESTAMP DEFAULT NOW())`);
-};
-
+// initialize database
 initDB();
-
-// logger middleware
-const logger = (req: Request, res: Response, next: NextFunction) => {
-  console.log(`${new Date().toISOString()} ${req.method} ${req.path}`);
-  next();
-}
 
 app.get("/", logger, (req: Request, res: Response) => {
   res.send("Hello, bro! whats up?");
@@ -173,6 +135,6 @@ app.use((req: Request, res: Response) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
+app.listen(port, () => {
+  console.log(`Server started on port ${port}`);
 });
